@@ -5,6 +5,7 @@ import {
   doc, 
   getDocFromServer, 
   initializeFirestore,
+  persistentLocalCache,
   CACHE_SIZE_UNLIMITED
 } from 'firebase/firestore';
 import firebaseConfig from '../../firebase-applet-config.json';
@@ -14,10 +15,9 @@ const app = initializeApp(firebaseConfig);
 // Initialize Firestore with enhanced settings for resilience
 export const db = initializeFirestore(app, {
   experimentalAutoDetectLongPolling: true,
-  localCache: {
-    kind: 'persistent',
+  localCache: persistentLocalCache({
     cacheSizeBytes: CACHE_SIZE_UNLIMITED
-  }
+  })
 }, firebaseConfig.firestoreDatabaseId);
 
 export const auth = getAuth(app);

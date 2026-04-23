@@ -15,6 +15,8 @@ export default function App() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [selectedPatientId, setSelectedPatientId] = useState<string | undefined>(undefined);
+  const [selectedVillage, setSelectedVillage] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
@@ -34,13 +36,19 @@ export default function App() {
     };
   }, []);
 
+  const handleStartDiagnostic = (patientId: string, village: string, type: 'NLP' | 'VISION') => {
+    setSelectedPatientId(patientId);
+    setSelectedVillage(village);
+    setActiveTab(type === 'NLP' ? 'diagnosis' : 'vision');
+  };
+
   const renderContent = () => {
     switch (activeTab) {
-      case 'patients': return <PatientList />;
-      case 'diagnosis': return <DiagnosisTool />;
-      case 'vision': return <MalnutritionScanner />;
+      case 'patients': return <PatientList onStartDiagnostic={handleStartDiagnostic} />;
+      case 'diagnosis': return <DiagnosisTool patientId={selectedPatientId} village={selectedVillage} />;
+      case 'vision': return <MalnutritionScanner patientId={selectedPatientId} village={selectedVillage} />;
       case 'alerts': return <EpidemicDashboard />;
-      default: return <PatientList />;
+      default: return <PatientList onStartDiagnostic={handleStartDiagnostic} />;
     }
   };
 

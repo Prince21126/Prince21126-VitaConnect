@@ -15,6 +15,20 @@ export default function DiagnosisTool({ patientId, village = "Village A" }: Diag
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<NLPDiagnosisResult | null>(null);
 
+  if (!patientId) {
+    return (
+      <div className="p-8 text-center space-y-4 pt-20">
+        <div className="w-16 h-16 bg-slate-800 rounded-full flex items-center justify-center mx-auto text-slate-500">
+           <AlertCircle size={32} />
+        </div>
+        <h3 className="text-white font-bold">Sélection Requise</h3>
+        <p className="text-slate-500 text-xs uppercase tracking-widest leading-loose">
+          Veuillez sélectionner un patient dans l'onglet <strong>Patients</strong> avant de lancer un diagnostic.
+        </p>
+      </div>
+    );
+  }
+
   const handleDiagnosis = async () => {
     if (!symptoms.trim()) return;
     setLoading(true);

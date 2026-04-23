@@ -34,7 +34,8 @@ service cloud.firestore {
 
     match /diagnostics/{diagId} {
       allow create: if isSignedIn() && isValidDiagnostic(incoming());
-      allow get, list: if isSignedIn() && resource.data.village != null; 
+      allow list: if isSignedIn();
+      allow get: if isSignedIn();
       allow update, delete: if false; 
     }
 

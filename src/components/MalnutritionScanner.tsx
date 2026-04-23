@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { analyzeMalnutritionImage, MalnutritionResult } from '../services/geminiService';
 import { db } from '../lib/firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
@@ -17,6 +17,20 @@ export default function MalnutritionScanner({ patientId, village = "Village A" }
   const [result, setResult] = useState<MalnutritionResult | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
+
+  if (!patientId) {
+    return (
+      <div className="p-8 text-center space-y-4 pt-20">
+        <div className="w-16 h-16 bg-slate-800 rounded-full flex items-center justify-center mx-auto text-slate-500">
+           <AlertTriangle size={32} />
+        </div>
+        <h3 className="text-white font-bold">Patient non sélectionné</h3>
+        <p className="text-slate-500 text-xs uppercase tracking-widest leading-loose">
+          L'analyse NutriScan doit être liée à un patient. Veuillez en choisir un dans l'onglet <strong>Patients</strong>.
+        </p>
+      </div>
+    );
+  }
 
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -41,13 +55,13 @@ export default function MalnutritionScanner({ patientId, village = "Village A" }
 
       // Save record (Ensuring all required fields for firestore.rules are present)
       await addDoc(collection(db, 'diagnostics'), {
-        patientId: patientId || 'agent_field_session',
+        patientId,
         village,
         type: 'VISION',
         prediction: analysis.severity,
         markers: analysis.markers,
         probability: analysis.severity === 'NORMAL' ? 0.95 : 0.82,
-        urgency: analysis.severity === 'SEVERE' ? 'RED' : analysis.severity === 'MODERATE' ? 'ORANGE' : 'GREEN',
+        urgency: analysis.severity === 'SÉVÈRE' ? 'RED' : analysis.severity === 'MODÉRÉ' ? 'ORANGE' : 'GREEN',
         timestamp: serverTimestamp()
       });
 
@@ -62,10 +76,10 @@ export default function MalnutritionScanner({ patientId, village = "Village A" }
 
   const getSeverityStyles = (s: string) => {
     switch (s) {
-      case 'SEVERE': return 'text-red-600 bg-red-50 border-red-200';
-      case 'MODERATE': return 'text-orange-600 bg-orange-50 border-orange-200';
-      case 'NORMAL': return 'text-emerald-600 bg-emerald-50 border-emerald-200';
-      default: return 'text-slate-600 bg-slate-50 border-slate-200';
+      case 'SÉVÈRE': return 'text-red-400 border-red-500/30';
+      case 'MODÉRÉ': return 'text-orange-400 border-orange-500/30';
+      case 'NORMAL': return 'text-emerald-400 border-emerald-500/30';
+      default: return 'text-slate-400 border-slate-700/50';
     }
   };
 

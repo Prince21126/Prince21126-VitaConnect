@@ -11,7 +11,11 @@ interface Patient {
   village: string;
 }
 
-export default function PatientList() {
+interface PatientListProps {
+  onStartDiagnostic: (patientId: string, village: string, type: 'NLP' | 'VISION') => void;
+}
+
+export default function PatientList({ onStartDiagnostic }: PatientListProps) {
   const [patients, setPatients] = useState<Patient[]>([]);
   const [search, setSearch] = useState('');
   const [showAdd, setShowAdd] = useState(false);
@@ -194,6 +198,24 @@ export default function PatientList() {
                         {history[0] ? new Date(history[0].timestamp?.toDate()).toLocaleDateString() : 'N/A'}
                       </p>
                    </div>
+                </div>
+
+                {/* Actions de Diagnostic */}
+                <div className="grid grid-cols-2 gap-4">
+                  <button 
+                    onClick={() => onStartDiagnostic(selectedPatient.id, selectedPatient.village, 'NLP')}
+                    className="flex flex-col items-center justify-center p-4 bg-emerald-600/10 border border-emerald-600/20 rounded-2xl hover:bg-emerald-600/20 transition-all group"
+                  >
+                    <Stethoscope size={24} className="text-emerald-500 mb-2 group-hover:scale-110 transition-transform" />
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-400">Diagnostic IA</span>
+                  </button>
+                  <button 
+                    onClick={() => onStartDiagnostic(selectedPatient.id, selectedPatient.village, 'VISION')}
+                    className="flex flex-col items-center justify-center p-4 bg-blue-600/10 border border-blue-600/20 rounded-2xl hover:bg-blue-600/20 transition-all group"
+                  >
+                    <Activity size={24} className="text-blue-500 mb-2 group-hover:scale-110 transition-transform" />
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-blue-400">NutriScan</span>
+                  </button>
                 </div>
 
                 {/* Medical History */}
