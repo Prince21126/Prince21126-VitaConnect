@@ -1,0 +1,13 @@
+{
+  "name": "VitaConnect",
+  "description": "Plateforme d'IA médicale pour la santé rurale : diagnostic assisté, détection de la malnutrition et alertes épidémiologiques.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ],
+  "majorCapabilities": [
+    "AI Diagnosis",
+    "Computer Vision",
+    "Real-time Epidemiology"
+  ]
+}

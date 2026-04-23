@@ -1,0 +1,56 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // 0. Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helpers
+    function isSignedIn() { return request.auth != null; }
+    function isValidId(id) { return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); }
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+    
+    // Validation: Patient
+    function isValidPatient(data) {
+      return data.fullName is string && data.fullName.size() <= 100
+          && data.age is number && data.age >= 0 && data.age <= 150
+          && data.village is string && data.village.size() <= 50;
+    }
+
+    // Validation: Diagnostic
+    function isValidDiagnostic(data) {
+      return data.prediction is string && data.prediction.size() <= 50
+          && data.probability is number && data.probability >= 0 && data.probability <= 1
+          && data.urgency in ['RED', 'ORANGE', 'GREEN']
+          && (data.type == 'NLP' || data.type == 'VISION')
+          && data.village is string && data.village.size() <= 50
+          && data.timestamp == request.time;
+    }
+
+    // Patients Collection
+    match /patients/{patientId} {
+      allow create: if isSignedIn() && isValidId(patientId) && isValidPatient(incoming());
+      allow get, list: if isSignedIn();
+      allow update: if isSignedIn() && isValidPatient(incoming()) 
+                     && incoming().diff(existing()).affectedKeys().hasOnly(['fullName', 'age', 'village']);
+    }
+
+    // Diagnostics Collection
+    match /diagnostics/{diagId} {
+      allow create: if isSignedIn() && isValidId(diagId) && isValidDiagnostic(incoming());
+      allow get, list: if isSignedIn(); // Broad read for health agents in the district
+      // Diagnostics are immutable once created
+      allow update, delete: if false; 
+    }
+
+    // Alerts Collection (Read-only for agents, system creates via internal processes usually)
+    // For this prototype, we allow listing for the dashboard
+    match /alerts/{alertId} {
+      allow read, list: if isSignedIn();
+      allow write: if false; // System only
+    }
+  }
+}

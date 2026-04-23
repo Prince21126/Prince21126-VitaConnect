@@ -1,0 +1,61 @@
+{
+  "entities": {
+    "Patient": {
+      "title": "Patient",
+      "description": "Profil du patient pour le suivi médical.",
+      "type": "object",
+      "properties": {
+        "fullName": { "type": "string" },
+        "age": { "type": "number" },
+        "village": { "type": "string" },
+        "location": { "type": "object", "description": "Coordonnées GPS" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["fullName", "age", "village"]
+    },
+    "Diagnostic": {
+      "title": "Diagnostic",
+      "description": "Résultat de l'analyse IA (Symptômes + Image).",
+      "type": "object",
+      "properties": {
+        "patientId": { "type": "string" },
+        "type": { "enum": ["NLP", "VISION"], "type": "string" },
+        "rawInput": { "type": "string", "description": "Symptômes ou URL image" },
+        "prediction": { "type": "string", "description": "Malaria, Pneumonie, Malnutrition..." },
+        "probability": { "type": "number" },
+        "urgency": { "enum": ["RED", "ORANGE", "GREEN"], "type": "string" },
+        "location": { "type": "object" },
+        "timestamp": { "type": "string", "format": "date-time" }
+      },
+      "required": ["patientId", "prediction", "urgency"]
+    },
+    "Alert": {
+      "title": "Alerte Épidémique",
+      "description": "Alerte déclenchée par une accumulation de cas.",
+      "type": "object",
+      "properties": {
+        "triggerType": { "type": "string" },
+        "radiusKm": { "type": "number" },
+        "caseCount": { "type": "number" },
+        "village": { "type": "string" },
+        "severity": { "type": "string" },
+        "active": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      }
+    }
+  },
+  "firestore": {
+    "patients": {
+      "schema": "Patient",
+      "description": "Répertoire des patients ruraux."
+    },
+    "diagnostics": {
+      "schema": "Diagnostic",
+      "description": "Historique des analyses cliniques AI."
+    },
+    "alerts": {
+      "schema": "Alert",
+      "description": "Flux d'alertes épidémiologiques en temps réel."
+    }
+  }
+}

@@ -1,0 +1,50 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() { return request.auth != null; }
+    function isValidId(id) { return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); }
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+    
+    function isValidPatient(data) {
+      return data.keys().hasAll(['fullName', 'age', 'village']) 
+          && data.fullName is string && data.fullName.size() <= 100
+          && data.age is number && data.age >= 0 && data.age <= 150
+          && data.village is string && data.village.size() <= 50;
+    }
+
+    function isValidDiagnostic(data) {
+      return data.prediction is string && data.prediction.size() <= 50
+          && data.probability is number && data.probability >= 0 && data.probability <= 1
+          && data.urgency in ['RED', 'ORANGE', 'GREEN']
+          && data.village is string && data.village.size() <= 50;
+    }
+
+    match /patients/{patientId} {
+      allow create: if isSignedIn() && isValidPatient(incoming());
+      allow get, list: if isSignedIn();
+      allow update: if isSignedIn() && isValidPatient(incoming()) 
+                     && incoming().diff(existing()).affectedKeys().hasOnly(['fullName', 'age', 'village']);
+    }
+
+    match /diagnostics/{diagId} {
+      allow create: if isSignedIn() && isValidDiagnostic(incoming());
+      allow get, list: if isSignedIn() && resource.data.village != null; 
+      allow update, delete: if false; 
+    }
+
+    match /alerts/{alertId} {
+      allow read, list: if isSignedIn();
+      allow write: if false;
+    }
+    
+    match /test/connection {
+      allow read: if true;
+    }
+  }
+}
